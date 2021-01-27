@@ -1,4 +1,4 @@
-package goSpiderFarmwork
+package goSpider
 
 type DataHandler struct {
 	Data DataItem

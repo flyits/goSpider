@@ -1,2 +1,2 @@
-package goSpiderFarmwork
+package goSpider
 

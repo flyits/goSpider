@@ -1,4 +1,4 @@
-package goSpiderFarmwork
+package goSpider
 
 import "golang.org/x/net/html"
 
