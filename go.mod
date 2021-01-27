@@ -1,4 +1,4 @@
-module goSpiderFarmwork
+module goSpider
 
 go 1.15
 
