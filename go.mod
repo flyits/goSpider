@@ -1,4 +1,4 @@
-module goSpider
+module github.com/Flyits/goSpider
 
 go 1.15
 
