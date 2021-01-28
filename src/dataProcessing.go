@@ -3,7 +3,7 @@ package goSpider
 type DataHandler struct {
 	Data DataItem
 
-	Ops uint64
+	ops uint64
 }
 type DataItem interface {
 	GetHandler() string

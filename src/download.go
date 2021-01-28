@@ -19,21 +19,18 @@ type Downloader struct {
 	urlItem    *UrlItem
 	spiderFunc string
 
-	Ops uint64
+	ops uint64
 }
 
 type UrlItem struct {
-	Url         string                      // 爬取地址
-	SpiderFunc  string                      // 请求方法
-	HandlerFunc string                      // 处理方法
-	WaitExpr    string                      // 需要 js 渲染的站点，需提前传递dom节点
-	Expr        string                      // 需要 js 渲染的站点，需提前传递dom节点
-	Attach      map[interface{}]interface{} // 额外参数
+	Url         string                                  // 爬取地址
+	SpiderFunc  string                                  // 请求方法
+	HandlerFunc func(response Response, spider *Spider) // 处理方法
+	WaitExpr    string                                  // 需要 js 渲染的站点，需提前传递dom节点
+	Expr        string                                  // 需要 js 渲染的站点，需提前传递dom节点
+	Attach      interface{}                             // 额外参数
 }
 
-func (urlItem *UrlItem) getHandlerFunc() string {
-	return urlItem.HandlerFunc
-}
 func (urlItem *UrlItem) getSpiderFunc() string {
 	return urlItem.SpiderFunc
 }
@@ -93,7 +90,7 @@ func (download *Downloader) JsLoadRequest() {
 	}
 
 	// create allocator context for use with creating a browser context later
-	allocatorContext, cancel := chromedp.NewRemoteAllocator(context.Background(), *getFlagDevToolWsUrl(spider))
+	allocatorContext, cancel := chromedp.NewRemoteAllocator(context.Background(), *getFlagDevToolWsUrl(download.spider))
 	defer cancel()
 
 	// create context
@@ -109,25 +106,12 @@ func (download *Downloader) JsLoadRequest() {
 		chromedp.Navigate(download.urlItem.Url),
 		chromedp.WaitVisible(download.urlItem.WaitExpr, chromedp.ByQuery),
 		chromedp.OuterHTML(download.urlItem.Expr, &htmlContent, chromedp.ByQuery),
-	)
-		err != nil {
+	); err != nil {
 		download.spider.Urls <- *download.urlItem
 		fmt.Println("请求失败："+download.urlItem.Url, err)
 		return
 	}
-
-	doc, err := htmlquery.Parse(strings.NewReader(htmlContent))
-	if err != nil {
-		download.spider.Urls <- *download.urlItem
-		fmt.Println(err)
-	} else {
-		response := Response{
-			HtmlNode: doc,
-			Url:      download.urlItem.Url,
-			Attach:   download.urlItem.Attach,
-		}
-		download.spider.CallUserFunc(response, download.urlItem.HandlerFunc, download.spider)
-	}
+	download.response(htmlContent)
 }
 
 func (download *Downloader) response(htmlStr string) {
@@ -136,24 +120,26 @@ func (download *Downloader) response(htmlStr string) {
 		fmt.Println(err)
 	}
 
-	download.spider.Urls <- UrlItem{}
 	response := Response{
 		HtmlStr:  htmlStr,
 		HtmlNode: doc,
 		Url:      download.urlItem.Url,
 		Attach:   download.urlItem.Attach,
 	}
-	download.spider.CallUserFunc(response, download.urlItem.getHandlerFunc(), download.spider)
+	download.urlItem.HandlerFunc(response, download.spider)
 }
 
 // 自动获取远程无头浏览器地址
 func getFlagDevToolWsUrl(spider *Spider) *string {
 	if flagDevToolWsUrl == nil {
 		url := spider.config.get("flagDevToolUrl", "http://127.0.0.1:9222/json/version")
-		req, _ := http.NewRequest("GET", url.(string), nil)
-		res, _ := http.DefaultClient.Do(req)
+		req, err := http.NewRequest("GET", url.(string), nil)
+		echoErr(err, true)
+		res, err := http.DefaultClient.Do(req)
+		echoErr(err, true)
 		defer res.Body.Close()
-		body, _ := ioutil.ReadAll(res.Body)
+		body, err := ioutil.ReadAll(res.Body)
+		echoErr(err, true)
 		var responseData map[string]string
 		if err := json.Unmarshal(body, &responseData); err != nil {
 			log.Printf("chromedp/headless-shell 服务异常，请检查！")

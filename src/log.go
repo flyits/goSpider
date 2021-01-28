@@ -8,15 +8,14 @@ import (
 func (spider *Spider) logPrint() {
 	spider.startLog()
 	ticker := time.NewTicker(time.Millisecond * 10000)
-	startTime := time.Now().Unix()
 	go func() {
 		for t := range ticker.C {
 			dataChanLen := len(spider.DataList)
 			urlChanLen := len(spider.Urls)
 
 			fmt.Println("Tick at", t)
-			fmt.Println("当前待处理数据：", dataChanLen, "当前待抓取链接：", urlChanLen, "当前爬虫运行的任务（协程）：", spider.Ops)
-			if spider.Ops == 0 && time.Now().Unix()-startTime > 30 {
+			fmt.Println("当前待处理数据：", dataChanLen, "当前待抓取链接：", urlChanLen, "当前爬虫运行的任务（协程）：", spider.ops)
+			if spider.ops == 0 {
 				close(spider.DataList)
 				close(spider.Urls)
 				ticker.Stop()
