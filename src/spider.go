@@ -12,7 +12,6 @@ type Spider struct {
 	DataList    chan DataItem
 	config      Config
 	downloader  *Downloader
-	dataHandler *DataHandler
 	Wg          sync.WaitGroup
 
 	ops uint64
@@ -41,7 +40,7 @@ func (spider *Spider) saveData() {
 			spider.Wg.Add(1)
 			defer spider.Wg.Done()
 			for item := range spider.DataList {
-				spider.CallUserFunc(item, item.GetHandler())
+				spider.CallUserFunc(item, item.GetHandler(), spider)
 			}
 		}()
 	}
