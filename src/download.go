@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+const (
+	Request       = "Request"
+	JsLoadRequest = "JsLoadRequest"
+)
+
 type Downloader struct {
 	spider     *Spider
 	urlItem    *UrlItem
@@ -33,7 +38,7 @@ type UrlItem struct {
 
 func (urlItem *UrlItem) getSpiderFunc() string {
 	if urlItem.SpiderFunc == "" {
-		return "Request"
+		return Request
 	}
 	return urlItem.SpiderFunc
 }
