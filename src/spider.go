@@ -8,11 +8,11 @@ import (
 )
 
 type Spider struct {
-	Urls        chan UrlItem
-	DataList    chan DataItem
-	config      Config
-	downloader  *Downloader
-	Wg          sync.WaitGroup
+	Urls       chan UrlItem
+	DataList   chan DataItem
+	config     Config
+	downloader *Downloader
+	Wg         sync.WaitGroup
 
 	ops uint64
 }
@@ -22,16 +22,21 @@ type SpiderHandlerFunc interface {
 }
 
 // 初始化
-func (spider *Spider) Init(urls []UrlItem) {
+func (spider *Spider) Init() *Spider {
 	spider.Urls = make(chan UrlItem, 100000)
 	spider.DataList = make(chan DataItem, 100000)
-	spider.config.init()
 	spider.ops = 0
+	spider.Run()
+	return spider
+}
+
+func (spider *Spider) Run() *Spider {
+	spider.config.init()
 	spider.saveData()
-	spider.run(urls)
+	spider.startUp()
 	spider.logPrint()
 
-	spider.Wg.Wait()
+	return spider
 }
 
 func (spider *Spider) saveData() {
@@ -46,7 +51,7 @@ func (spider *Spider) saveData() {
 	}
 }
 
-func (spider *Spider) run(urls []UrlItem) {
+func (spider *Spider) startUp() {
 	for i := 0; i < spider.config.get("spiderCount", 1000).(int); i++ {
 		go func() {
 			spider.Wg.Add(1)
@@ -64,11 +69,21 @@ func (spider *Spider) run(urls []UrlItem) {
 		}()
 		time.Sleep(500000 * time.Nanosecond)
 	}
-	for _, url := range urls {
-		spider.Urls <- url
-	}
+
 }
 
 func (spider *Spider) getOps() uint64 {
 	return spider.ops
+}
+
+func (spider *Spider) AddJob(url UrlItem) *Spider {
+	spider.Urls <- url
+	return spider
+}
+
+func (spider *Spider) AddJobs(urls []UrlItem) *Spider {
+	for _, url := range urls {
+		spider.Urls <- url
+	}
+	return spider
 }

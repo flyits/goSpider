@@ -32,6 +32,9 @@ type UrlItem struct {
 }
 
 func (urlItem *UrlItem) getSpiderFunc() string {
+	if urlItem.SpiderFunc == "" {
+		return "Request"
+	}
 	return urlItem.SpiderFunc
 }
 
