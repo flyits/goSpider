@@ -32,7 +32,7 @@ func (config *Config) init() {
 		panic(err)
 	}
 
-	configPath := currentDirectory + string(os.PathSeparator) + "config" + string(os.PathSeparator) + "goSpider.json"
+	configPath := currentDirectory + string(os.PathSeparator) + "Config" + string(os.PathSeparator) + "goSpider.json"
 	buf, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		config.createDefaultConfigFile(currentDirectory)
@@ -67,7 +67,7 @@ func (config *Config) flagParamInit() {
 }
 
 func (config *Config) createDefaultConfigFile(currentDirectory string) {
-	configPath := currentDirectory + string(os.PathSeparator) + "config"
+	configPath := currentDirectory + string(os.PathSeparator) + "Config"
 	if !pathExists(configPath) {
 		createDir(configPath)
 	}

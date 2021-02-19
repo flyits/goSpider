@@ -29,8 +29,8 @@ func (spider *Spider) logPrint() {
 
 func (spider *Spider) startLog() {
 	fmt.Println("当前时间：", time.Now().Format("2006-01-02 15:04:05"))
-	fmt.Printf("爬虫并发数量：%d\n", spider.config.get("spiderCount", 0).(int))
-	fmt.Printf("数据并行处理数：%d\n", spider.config.get("dataHandleCount", 0).(int))
+	fmt.Printf("爬虫并发数量：%d\n", spider.Config.get("spiderCount", 0).(int))
+	fmt.Printf("数据并行处理数：%d\n", spider.Config.get("dataHandleCount", 0).(int))
 	fmt.Println("开启抓取数据……")
 	fmt.Println("--------------------------------------------------------------------------")
 }

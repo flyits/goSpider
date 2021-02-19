@@ -10,7 +10,7 @@ import (
 type Spider struct {
 	Urls       chan UrlItem
 	DataList   chan DataItem
-	config     Config
+	Config     Config
 	downloader *Downloader
 	Wg         sync.WaitGroup
 
@@ -31,7 +31,7 @@ func (spider *Spider) Init() *Spider {
 }
 
 func (spider *Spider) Run() *Spider {
-	spider.config.init()
+	spider.Config.init()
 	spider.saveData()
 	spider.startUp()
 	spider.logPrint()
@@ -40,7 +40,7 @@ func (spider *Spider) Run() *Spider {
 }
 
 func (spider *Spider) saveData() {
-	for i := 0; i < spider.config.get("dataHandleCount", 1000).(int); i++ {
+	for i := 0; i < spider.Config.get("dataHandleCount", 1000).(int); i++ {
 		go func() {
 			spider.Wg.Add(1)
 			defer spider.Wg.Done()
@@ -52,7 +52,7 @@ func (spider *Spider) saveData() {
 }
 
 func (spider *Spider) startUp() {
-	for i := 0; i < spider.config.get("spiderCount", 1000).(int); i++ {
+	for i := 0; i < spider.Config.get("spiderCount", 1000).(int); i++ {
 		go func() {
 			spider.Wg.Add(1)
 			defer spider.Wg.Done()

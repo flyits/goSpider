@@ -54,7 +54,7 @@ func (download *Downloader) Request() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	userAgent := download.spider.config.get("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36")
+	userAgent := download.spider.Config.get("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36")
 	// 添加Header
 	req.Header.Add("User-Agent", userAgent.(string))
 	// 发起请求
@@ -140,7 +140,7 @@ func (download *Downloader) response(htmlStr string) {
 // 自动获取远程无头浏览器地址
 func getFlagDevToolWsUrl(spider *Spider) *string {
 	if flagDevToolWsUrl == nil {
-		url := spider.config.get("flagDevToolUrl", "http://127.0.0.1:9222/json/version")
+		url := spider.Config.get("flagDevToolUrl", "http://127.0.0.1:9222/json/version")
 		req, err := http.NewRequest("GET", url.(string), nil)
 		echoErr(err, true)
 		res, err := http.DefaultClient.Do(req)
