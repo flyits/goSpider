@@ -10,7 +10,8 @@ import (
 	"sync/atomic"
 )
 
-//  Description  动态调用结构体方法
+// CallUserFunc
+//  @Description  动态调用结构体方法
 //  @param object		interface{}		结构体实例
 //  @param methodName	string    		方法名
 //  @param args			...interface{}	其他参数
@@ -21,17 +22,22 @@ func (spider *Spider) CallUserFunc(object interface{}, methodName string, args .
 		inputs[i] = reflect.ValueOf(args[i])
 	}
 	instance := reflect.ValueOf(object)
+	if instance.Kind() != reflect.Ptr {
+		fmt.Println("ERROR: spider.DataList must be passed in the pointer type")
+		os.Exit(-1)
+	}
 	atomic.AddUint64(&spider.ops, 1)
 	if len(inputs) > 0 {
 		instance.MethodByName(methodName).Call(inputs)
 	} else {
-		instance.MethodByName(methodName).Call(make([]reflect.Value , 0) )
+		instance.MethodByName(methodName).Call(make([]reflect.Value, 0))
 	}
 	atomic.AddUint64(&spider.ops, ^uint64(0))
 	runtime.Gosched()
 }
 
-//  Description  去除字符串前后指定字符，默认换行、空字符
+// Trim
+//  @Description  去除字符串前后指定字符，默认换行、空字符
 //  @param str		string		源字符串
 //  @param charList	[]string    需去除的前后字符
 //  @return string
@@ -45,7 +51,8 @@ func Trim(str string, charList []string) string {
 	return str
 }
 
-//  Description  	去除字符串前后指定字符，默认换行、空字符
+// Str2Int
+//  @Description  	去除字符串前后指定字符，默认换行、空字符
 //  @param strNum	string		源字符串
 //  @return int
 func Str2Int(strNum string) int {

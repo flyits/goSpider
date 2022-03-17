@@ -1,8 +1,8 @@
-package simpleSpider
+package main
 
 import (
 	"fmt"
-	goSpider "github.com/Flyits/goSpider/src"
+	"github.com/Flyits/goSpider/src"
 	"github.com/antchfx/htmlquery"
 )
 
@@ -12,20 +12,21 @@ import (
 
 func main() {
 	index := goSpider.UrlItem{
+		SpiderFunc:  goSpider.Request,
 		Url:         "https://movie.douban.com/",
 		HandlerFunc: test,
 	}
+	spider := goSpider.Init()
+	spider.AddJob(index)
+	spider.Run()
 
-	spider := goSpider.Spider{}
-	spider.Init().AddJob(index)
-	spider.Wg.Wait()
 }
 
 func test(response goSpider.Response, spider *goSpider.Spider) {
 
 	movies := htmlquery.Find(response.HtmlNode, "//div[@class='screening-bd']//ul[@class='ui-slide-content']/li")
 	for k, _ := range movies {
-		movie:=&movie{
+		movie := &movie{
 			Title:     htmlquery.SelectAttr(movies[k], "data-title"),
 			Pic:       htmlquery.SelectAttr(htmlquery.FindOne(movies[k], "//img"), "src"),
 			Star:      htmlquery.SelectAttr(movies[k], "data-rate"),
@@ -37,7 +38,7 @@ func test(response goSpider.Response, spider *goSpider.Spider) {
 
 }
 
-// 异步处理/存储回调方法  也可在 response 里直接同步处理/存储
+// DataHandle 异步处理/存储回调方法  也可在 response 里直接同步处理/存储
 func (movie *movie) DataHandle(spider *goSpider.Spider) {
 	fmt.Println("数据：", movie)
 

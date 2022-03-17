@@ -12,7 +12,7 @@ type Spider struct {
 	DataList   chan DataItem
 	Config     Config
 	downloader *Downloader
-	Wg         sync.WaitGroup
+	wg         sync.WaitGroup
 
 	ops uint64
 }
@@ -21,29 +21,30 @@ type SpiderHandlerFunc interface {
 	getSpiderFunc() string
 }
 
-// 初始化
-func (spider *Spider) Init() *Spider {
+// Init 初始化
+func Init() *Spider {
+	spider := &Spider{}
 	spider.Urls = make(chan UrlItem, 100000)
 	spider.DataList = make(chan DataItem, 100000)
 	spider.ops = 0
-	spider.Run()
 	return spider
 }
 
-func (spider *Spider) Run() *Spider {
+// Run 执行此方法后，主线程将被阻塞至爬虫队列运行完毕
+func (spider *Spider) Run() {
 	spider.Config.init()
-	spider.saveData()
+	spider.response()
 	spider.startUp()
 	spider.logPrint()
-
-	return spider
+	spider.wg.Wait()
+	return
 }
 
-func (spider *Spider) saveData() {
+func (spider *Spider) response() {
 	for i := 0; i < spider.Config.get("dataHandleCount", 1000).(int); i++ {
 		go func() {
-			spider.Wg.Add(1)
-			defer spider.Wg.Done()
+			spider.wg.Add(1)
+			defer spider.wg.Done()
 			for item := range spider.DataList {
 				spider.CallUserFunc(item, item.GetHandler(), spider)
 			}
@@ -54,8 +55,8 @@ func (spider *Spider) saveData() {
 func (spider *Spider) startUp() {
 	for i := 0; i < spider.Config.get("spiderCount", 1000).(int); i++ {
 		go func() {
-			spider.Wg.Add(1)
-			defer spider.Wg.Done()
+			spider.wg.Add(1)
+			defer spider.wg.Done()
 			for spiderItem := range spider.Urls {
 				spider.downloader = &Downloader{
 					spider:  spider,
